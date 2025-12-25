@@ -41,6 +41,7 @@ dependencies:
   speech_to_text: ^7.3.0
   table_calendar: ^3.2.0
   flutter_dotenv: ^6.0.0
+  google_fonts: ^6.3.3
   # 這裡不要再放任何重複的 http 或 speech_to_text，保持乾淨
  
 

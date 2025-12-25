@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_fonts/google_fonts.dart';
 void main() async {
   // 1. 確保 Flutter 引擎已初始化
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +32,35 @@ class ProAccountingApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: const HomePage());
+    return MaterialApp(
+      title: '秒朗陪星', // 換一個可愛的日系名稱
+      debugShowCheckedModeBanner: false,
+      
+      // --- 日系可愛主題設定 ---
+      theme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
+        // 使用圓潤的日系字體 (需在 pubspec.yaml 加入 google_fonts)
+        textTheme: GoogleFonts.mPlusRounded1cTextTheme(ThemeData.light().textTheme).copyWith(
+          bodyMedium: GoogleFonts.mPlusRounded1c(color: const Color(0xFF5F5F5F)),
+        ),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFFFD1DC), // 櫻花粉
+          primary: const Color(0xFFFFB7B2),   // 蜜桃粉
+          surface: Colors.white,
+          background: const Color(0xFFF9F9F9), // 米白色
+        ),
+        scaffoldBackgroundColor: const Color(0xFFFDFDFD),
+        bottomSheetTheme: const BottomSheetThemeData(
+          backgroundColor: Colors.white,
+          elevation: 20,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          ),
+        ),
+      ),
+      home: const HomePage(),
+    );
   }
 }
 
@@ -1344,91 +1373,129 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- 4. 主畫面 Build 方法 ---
   @override
-  Widget build(BuildContext context) {
-    final dailyList = _history
-        .where(
-          (i) => i['date'] == DateFormat('yyyy-MM-dd').format(_selectedDay),
-        )
-        .toList();
+Widget build(BuildContext context) {
+  final dailyList = _history
+      .where(
+        (i) => i['date'] == DateFormat('yyyy-MM-dd').format(_selectedDay),
+      )
+      .toList();
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFEFDFB),
-      body: Column(
-        children: [
-          // A. 頂部標題與標籤
-          Container(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 10,
-              bottom: 10,
-              left: 16,
-            ),
-            color: Colors.white,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const SizedBox(width: 80),
-                const Text(
-                  "修仙記帳寶典",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                _buildAuthTag(),
-              ],
-            ),
+  return Scaffold(
+    // 使用主題設定的日系底色
+    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+    body: Column(
+      children: [
+        // A. 頂部標題與標籤 (簡潔、圓潤樣式)
+        Container(
+          padding: EdgeInsets.only(
+            top: MediaQuery.of(context).padding.top + 10,
+            bottom: 15,
+            left: 20,
+            right: 20,
           ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(25)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // 左側裝飾：可以用一個可愛小圖示或預留空間
+              const Icon(Icons.auto_awesome, color: Color(0xFFFFD1DC), size: 24),
+              const Text(
+                "秒朗陪星", // 您目標圖片的標題
+                style: TextStyle(
+                  fontSize: 22, 
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2.0,
+                  color: Color(0xFF5F5F5F),
+                ),
+              ),
+              _buildAuthTag(), // 右側同步標籤
+            ],
+          ),
+        ),
 
-          // B. 可捲動內容
-          Expanded(
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Column(
+        // B. 可捲動內容
+        Expanded(
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    // 圖表區 (建議內部也改為馬卡龍配色)
+                    _buildChartSection(), 
+                    // 日曆區 (建議背景改為透明或淡淡粉色)
+                    _buildCalendarSection(),
+                  ],
+                ),
+              ),
+              
+              // 今日紀錄標題
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(left: 25, top: 20, bottom: 10),
+                  child: Row(
                     children: [
-                      _buildChartSection(), // 呼叫整合後的報表
-                      _buildCalendarSection(),
+                      Icon(Icons.bookmark_added, size: 18, color: Color(0xFFFFB7B2)),
+                      SizedBox(width: 8),
+                      Text(
+                        "今日帳目",
+                        style: TextStyle(
+                          color: Color(0xFF9E9E9E), 
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 20, top: 10, bottom: 5),
-                    child: Text(
-                      "今日紀錄",
-                      style: TextStyle(color: Colors.grey, fontSize: 13),
-                    ),
-                  ),
-                ),
-                dailyList.isEmpty
-                    ? SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Center(
-                          child: Text(
-                            "本日尚未有紀錄",
-                            style: TextStyle(
-                              color: Colors.grey.shade400,
-                              fontSize: 14,
+              ),
+
+              // 紀錄清單
+              dailyList.isEmpty
+                  ? SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.pets, size: 48, color: const Color(0xFFFFD1DC).withOpacity(0.5)),
+                            const SizedBox(height: 10),
+                            const Text(
+                              "今天還沒記帳喔汪！",
+                              style: TextStyle(color: Colors.grey, fontSize: 15),
                             ),
-                          ),
-                        ),
-                      )
-                    : SliverPadding(
-                        padding: const EdgeInsets.only(bottom: 120),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) =>
-                                _buildDismissibleItem(dailyList[index]),
-                            childCount: dailyList.length,
-                          ),
+                          ],
                         ),
                       ),
-              ],
-            ),
+                    )
+                  : SliverPadding(
+                      // 增加底部邊距，確保不會被底部的黃色語音鈕擋住
+                      padding: const EdgeInsets.only(bottom: 150, left: 10, right: 10),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) => _buildDismissibleItem(dailyList[index]),
+                          childCount: dailyList.length,
+                        ),
+                      ),
+                    ),
+            ],
           ),
-        ],
-      ),
-      bottomSheet: _buildVoiceKeyboardPanel(),
-    );
-  }
+        ),
+      ],
+    ),
+    // 底部語音鍵盤 (建議修改按鈕為圓形、黃色系)
+    bottomSheet: _buildVoiceKeyboardPanel(),
+  );
+}
 }
