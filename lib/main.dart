@@ -40,17 +40,27 @@ class ProAccountingApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
-        // 使用圓潤的日系字體 (需在 pubspec.yaml 加入 google_fonts)
-        textTheme: GoogleFonts.mPlusRounded1cTextTheme(ThemeData.light().textTheme).copyWith(
-          bodyMedium: GoogleFonts.mPlusRounded1c(color: const Color(0xFF5F5F5F)),
-        ),
+
+        textTheme:
+            GoogleFonts.mPlusRounded1cTextTheme(
+              ThemeData.light().textTheme,
+            ).copyWith(
+              bodyMedium: GoogleFonts.mPlusRounded1c(
+                color: const Color(0xFF5F5F5F),
+              ),
+            ),
+
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFFFD1DC), // 櫻花粉
-          primary: const Color(0xFFFFB7B2),   // 蜜桃粉
-          surface: Colors.white,
-          background: const Color(0xFFF9F9F9), // 米白色
+          seedColor: const Color(0xFFFFD1DC),
+          primary: const Color(0xFFFFB7B2),
+          secondary: const Color(0xFFB2E2F2),
+          // 解決警告：
+          surface: const Color(0xFFFDFDFD),
         ),
+
+        // 確保 Scaffold 的底色也是乾淨的米白色
         scaffoldBackgroundColor: const Color(0xFFFDFDFD),
+
         bottomSheetTheme: const BottomSheetThemeData(
           backgroundColor: Colors.white,
           elevation: 20,
@@ -705,9 +715,9 @@ class _HomePageState extends State<HomePage> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 5),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 5),
           ],
-          border: Border.all(color: categoryColor.withOpacity(0.4)),
+          border: Border.all(color: categoryColor.withValues(alpha: 0.4)),
         ),
         child: ListTile(
           onTap: () => _showEditDialog(item), // 點擊後彈出修改視窗
@@ -814,141 +824,158 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- 2. 帳務報表區塊 (含支出/收入/結餘切換) ---
-  Widget _buildChartSection() {
-    DateTime now = DateTime.now();
+  // --- 2. 帳務報表區塊 (日系可愛風修正版) ---
+Widget _buildChartSection() {
+  DateTime now = DateTime.now();
 
-    // 1. 過濾資料 (這部分你之前的代碼很完整)
-    List<Map<String, dynamic>> filteredList = _history.where((h) {
-      if (h['date'] == null ||
-          h['type'] == null ||
-          h['category'] == null ||
-          h['amount'] == null)
-        return false;
-      try {
-        DateTime hDate = DateFormat('yyyy-MM-dd').parse(h['date'].toString());
-
-        // 🔥 關鍵修正：過濾時不要受 _selectedTab 限制，先抓出該時段「所有」資料
-        // 這樣我們才能在同一個 filteredList 裡同時算支出、收入和結餘
-        if (_timeRange == "月") {
-          return hDate.year == _selectedDay.year &&
-              hDate.month == _selectedDay.month;
-        } else if (_timeRange == "近 6 個月") {
-          return hDate.isAfter(now.subtract(const Duration(days: 180)));
-        } else {
-          return hDate.year == _selectedDay.year;
-        }
-      } catch (e) {
-        return false;
+  // 1. 資料過濾邏輯 (保持不變)
+  List<Map<String, dynamic>> filteredList = _history.where((h) {
+    if (h['date'] == null || h['type'] == null || h['category'] == null || h['amount'] == null)
+      return false;
+    try {
+      DateTime hDate = DateFormat('yyyy-MM-dd').parse(h['date'].toString());
+      if (_timeRange == "月") {
+        return hDate.year == _selectedDay.year && hDate.month == _selectedDay.month;
+      } else if (_timeRange == "近 6 個月") {
+        return hDate.isAfter(now.subtract(const Duration(days: 180)));
+      } else {
+        return hDate.year == _selectedDay.year;
       }
-    }).toList();
-
-    // 2. 根據當前切換的標籤（支出/收入）計算圓餅圖數據
-    Map<String, double> categoryStats = {};
-    double totalAmount = 0;
-
-    // 只有在非「結餘」模式下才計算圓餅圖需要的分類統計
-    if (_selectedTab != "結餘") {
-      for (var item in filteredList.where((h) => h['type'] == _selectedTab)) {
-        String cat = (item['category'] ?? "未分類").toString();
-        double amt = (item['amount'] ?? 0.0).toDouble();
-        categoryStats[cat] = (categoryStats[cat] ?? 0) + amt;
-        totalAmount += amt;
-      }
+    } catch (e) {
+      return false;
     }
+  }).toList();
 
-    return Container(
-      // ... 原本的 Container 樣式代碼 ...
-      child: ExpansionTile(
-        initiallyExpanded: true, // 建議設為 true 讓它預覽就是展開的
-        title: const Text(
-          "帳務報表",
-          style: TextStyle(
-            color: Color(0xFFD4AF37), // 仙金色
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2,
-          ),
+  // 2. 統計計算
+  Map<String, double> categoryStats = {};
+  double totalAmount = 0;
+
+  if (_selectedTab != "結餘") {
+    for (var item in filteredList.where((h) => h['type'] == _selectedTab)) {
+      String cat = (item['category'] ?? "未分類").toString();
+      double amt = (item['amount'] ?? 0.0).toDouble();
+      categoryStats[cat] = (categoryStats[cat] ?? 0) + amt;
+      totalAmount += amt;
+    }
+  }
+
+  return Container(
+    margin: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(25), // 圓潤大卡片
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFFFFD1DC)..withValues(alpha: 0.2), // 淺粉色呼吸感陰影
+          blurRadius: 20,
+          offset: const Offset(0, 8),
         ),
+      ],
+    ),
+    child: ExpansionTile(
+      initiallyExpanded: true,
+      // 移除預設的邊框線
+      shape: const RoundedRectangleBorder(side: BorderSide.none),
+      collapsedShape: const RoundedRectangleBorder(side: BorderSide.none),
+      title: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildSegmentedControl(
-                  ["支出", "收入", "結餘"],
-                  _selectedTab,
-                  (v) => setState(() => _selectedTab = v),
-                ),
-                _buildSegmentedControl(
-                  ["月", "近 6 個月", "年"],
-                  _timeRange,
-                  (v) => setState(() => _timeRange = v),
-                  isSecondary: true,
-                ),
-                const SizedBox(height: 20),
-
-                // 3. 判斷顯示圓餅圖還是結餘總表
-                if (_selectedTab != "結餘") ...[
-                  categoryStats.isNotEmpty
-                      ? Column(
-                          children: [
-                            _buildDonutChart(
-                              totalAmount,
-                              categoryStats,
-                            ), // 🔥 確保這個函式沒報錯
-                            const SizedBox(height: 20),
-                            _buildCategoryList(totalAmount, categoryStats),
-                          ],
-                        )
-                      : const SizedBox(
-                          height: 100,
-                          child: Center(child: Text("此期間尚無相關紀錄")),
-                        ),
-                ] else ...[
-                  // 計算結餘並顯示
-                  Builder(
-                    builder: (context) {
-                      double inc = 0;
-                      double exp = 0;
-                      for (var h in filteredList) {
-                        double amt = (h['amount'] ?? 0).toDouble();
-                        if (h['type'] == '收入')
-                          inc += amt;
-                        else
-                          exp += amt;
-                      }
-                      return _buildBalanceSummary(income: inc, expense: exp);
-                    },
-                  ),
-                ],
-              ],
+          const Icon(Icons.analytics_rounded, color: Color(0xFFFFB7B2), size: 20),
+          const SizedBox(width: 8),
+          Text(
+            "帳務報表",
+            style: GoogleFonts.mPlusRounded1c(
+              color: const Color(0xFF5F5F5F), // 柔和深灰文字
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
           ),
         ],
       ),
-    );
-  }
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: Column(
+            children: [
+              // 第一層切換：支出/收入/結餘
+              _buildSegmentedControl(
+                ["支出", "收入", "結餘"],
+                _selectedTab,
+                (v) => setState(() => _selectedTab = v),
+              ),
+              const SizedBox(height: 8),
+              // 第二層切換：時間區間
+              _buildSegmentedControl(
+                ["月", "近 6 個月", "年"],
+                _timeRange,
+                (v) => setState(() => _timeRange = v),
+                isSecondary: true,
+              ),
+              const SizedBox(height: 25), // 增加留白
+
+              // 3. 顯示內容
+              if (_selectedTab != "結餘") ...[
+                categoryStats.isNotEmpty
+                    ? Column(
+                        children: [
+                          _buildDonutChart(
+                            totalAmount,
+                            categoryStats,
+                          ),
+                          const SizedBox(height: 25),
+                          _buildCategoryList(totalAmount, categoryStats),
+                        ],
+                      )
+                    : SizedBox(
+                        height: 150,
+                        child: Center(
+                          child: Text(
+                            "此期間尚無紀錄~",
+                            style: TextStyle(color: Colors.grey[400]),
+                          ),
+                        ),
+                      ),
+              ] else ...[
+                Builder(
+                  builder: (context) {
+                    double inc = 0;
+                    double exp = 0;
+                    for (var h in filteredList) {
+                      double amt = (h['amount'] ?? 0).toDouble();
+                      if (h['type'] == '收入') inc += amt;
+                      else exp += amt;
+                    }
+                    return _buildBalanceSummary(income: inc, expense: exp);
+                  },
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   // --- 3. 核心輔助組件 (甜甜圈、清單、結餘) ---
   Widget _buildDonutChart(double total, Map<String, double> stats) {
     return SizedBox(
-      height: 180,
+      height: 220,
       child: Stack(
         alignment: Alignment.center,
         children: [
           PieChart(
             PieChartData(
-              centerSpaceRadius: 60,
-              sectionsSpace: 0,
+              centerSpaceRadius: 65,
+              sectionsSpace: 4,
               sections: stats.entries
                   .map(
                     (e) => PieChartSectionData(
                       color: _categoryColors[e.key] ?? Colors.blueGrey,
                       value: e.value,
                       title: '',
-                      radius: 40,
-                      borderSide: const BorderSide(
-                        color: Color(0xFF2D2D2D),
+                      radius: 25,
+                      borderSide:  BorderSide(
+                        color: Colors.white.withValues(alpha: 0.5),
                         width: 1.2,
                       ),
                     ),
@@ -961,17 +988,25 @@ class _HomePageState extends State<HomePage> {
             children: [
               Text(
                 "總$_selectedTab",
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                // 💡 移除 const，因為 GoogleFonts 是方法調用
+                style: GoogleFonts.mPlusRounded1c(
+                  color: const Color(0xFFA0A0A0), // 柔和灰
+                  fontSize: 14,
+                  letterSpacing: 1.2, // 增加字距更具設計感
+                ),
               ),
+              // 💡 增加垂直間距，避免文字擠在一起
+              const SizedBox(height: 6),
               Text(
                 "\$${total.toInt()}",
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                style: GoogleFonts.mPlusRounded1c(
+                  fontSize: 26, // 數字放大，視覺更平衡
+                  fontWeight: FontWeight.w800, // 極粗體展現可愛感
+                  color: const Color(0xFF5F5F5F), // 深質感灰
                 ),
               ),
             ],
-          ),
+          )
         ],
       ),
     );
@@ -1098,7 +1133,7 @@ class _HomePageState extends State<HomePage> {
               child: Container(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: sel ? const Color(0xFFFFD54F) : Colors.transparent,
+                  color: sel ? const Color.fromARGB(255, 255, 232, 157) : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
