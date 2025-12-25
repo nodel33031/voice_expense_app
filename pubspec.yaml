@@ -30,7 +30,7 @@ environment:
 dependencies:
   fl_chart: ^1.1.1
   flutter:
-    sdk: flutter
+    sdk: flutter    
   firebase_core: ^3.15.2
   firebase_auth: ^5.7.0
   cloud_firestore: ^5.4.0
@@ -40,6 +40,7 @@ dependencies:
   shared_preferences: ^2.5.4
   speech_to_text: ^7.3.0
   table_calendar: ^3.2.0
+  flutter_dotenv: ^6.0.0
   # 這裡不要再放任何重複的 http 或 speech_to_text，保持乾淨
  
 
@@ -66,6 +67,8 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - .env
 
   # To add assets to your application, add an assets section, like this:
   # assets:

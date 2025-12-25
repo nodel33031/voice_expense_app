@@ -12,15 +12,16 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'firebase_options.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 void main() async {
   // 1. 確保 Flutter 引擎已初始化
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+  // 初始化 Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-  // 2. 關鍵修正：必須傳入 options 參數，否則 Web 版會崩潰
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // 3. 啟動 App
   runApp(const ProAccountingApp());
 }
 
@@ -42,7 +43,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final String geminiApiKey = "AIzaSyDm8POoef-apmaXDDzG03gM2gzlahv3Yl4";
+  final String geminiApiKey = dotenv.env['GEMINI_API_KEY'] ?? "";
   final stt.SpeechToText _speech = stt.SpeechToText();
 
   bool _isListening = false;
