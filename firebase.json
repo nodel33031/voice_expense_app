@@ -1,0 +1,39 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "voice-expense-smart",
+          "appId": "1:861794811820:android:2495beda42cfaadcc64409",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "voice-expense-smart",
+          "configurations": {
+            "android": "1:861794811820:android:2495beda42cfaadcc64409",
+            "ios": "1:861794811820:ios:7537654421d98dfdc64409",
+            "macos": "1:861794811820:ios:7537654421d98dfdc64409",
+            "web": "1:861794811820:web:ac387d2a1d56d46bc64409",
+            "windows": "1:861794811820:web:c7abf299de66af7dc64409"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

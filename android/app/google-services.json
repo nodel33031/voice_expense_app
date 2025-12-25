@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "861794811820",
+    "project_id": "voice-expense-smart",
+    "storage_bucket": "voice-expense-smart.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:861794811820:android:2495beda42cfaadcc64409",
+        "android_client_info": {
+          "package_name": "com.example.voice_expense_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "861794811820-ochhte84mkuqq889qtku1a4ikmee4njq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYOgBwTw2KdY6hs6X1JnlzBaj55y4t0WA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "861794811820-ochhte84mkuqq889qtku1a4ikmee4njq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "861794811820-af94t8u1n26a85n8srr9n0mqkjt31pc4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.voiceExpenseApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
